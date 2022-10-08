@@ -60,16 +60,16 @@ int main(int argc, char** argv)
 				direction = {0, 0};
 
 				const Uint8 *state = SDL_GetKeyboardState(NULL);
-				if (state[SDL_SCANCODE_LEFT])
+				if (state[SDL_SCANCODE_LEFT] || state[SDL_SCANCODE_H])
 					direction = direction + Vector2::Right();
 
-				if (state[SDL_SCANCODE_RIGHT])
+				if (state[SDL_SCANCODE_RIGHT] || state[SDL_SCANCODE_L])
 					direction = direction + Vector2::Left();
 
-				if (state[SDL_SCANCODE_UP])
+				if (state[SDL_SCANCODE_UP] || state[SDL_SCANCODE_K])
 					direction = direction + Vector2::Up();
 
-				if (state[SDL_SCANCODE_DOWN])
+				if (state[SDL_SCANCODE_DOWN] || state[SDL_SCANCODE_J])
 					direction = direction + Vector2::Down();
 
 				keydown = direction != Vector2(0, 0);
