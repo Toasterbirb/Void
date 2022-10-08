@@ -1,1 +1,0 @@
-/usr/bin/cc -fPIC -g -shared -Wl,-soname,libogg.so.0 -o libogg.so.0.8.5 CMakeFiles/ogg.dir/src/bitwise.c.o CMakeFiles/ogg.dir/src/framing.c.o 

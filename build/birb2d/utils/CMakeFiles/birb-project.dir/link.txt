@@ -1,1 +1,0 @@
-/usr/bin/c++ -g "CMakeFiles/birb-project.dir/birb-project.cpp.o" -o birb-project  ../libbirb2d.a ../vendor/SDL_image/libSDL2_imaged.a ../vendor/SDL_ttf/libSDL2_ttfd.a ../vendor/SDL_ttf/external/freetype/libfreetyped.a ../vendor/SDL_mixer/libSDL2_mixerd.a ../vendor/SDL2_gfx/libSDL2_gfx.a ../vendor/SDL/libSDL2d.a -lm -lrt -pthread 
