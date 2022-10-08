@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/void.dir/src/main.cpp.o CMakeFiles/void.dir/src/cavegen.cpp.o -o void  birb2d/libbirb2d.a birb2d/vendor/SDL_image/libSDL2_imaged.a birb2d/vendor/SDL_ttf/libSDL2_ttfd.a birb2d/vendor/SDL_ttf/external/freetype/libfreetyped.a birb2d/vendor/SDL_mixer/libSDL2_mixerd.a birb2d/vendor/SDL2_gfx/libSDL2_gfx.a birb2d/vendor/SDL/libSDL2d.a -lm -lrt -pthread 

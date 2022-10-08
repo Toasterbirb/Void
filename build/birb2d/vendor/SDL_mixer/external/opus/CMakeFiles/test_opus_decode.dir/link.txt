@@ -1,0 +1,1 @@
+/usr/bin/cc -g -rdynamic CMakeFiles/test_opus_decode.dir/tests/test_opus_decode.c.o -o test_opus_decode  -Wl,-rpath,/home/toasterbirb/git/void/build/birb2d/vendor/SDL_mixer/external/opus libopus.so.0.8.0 

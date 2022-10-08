@@ -1,0 +1,2 @@
+/home/toasterbirb/git/void/build/birb2d/vendor/SDL_mixer/external/flac/src/libFLAC/CMakeFiles/CheckASM_NASM/CMakeFiles/edit_cache.dir
+/home/toasterbirb/git/void/build/birb2d/vendor/SDL_mixer/external/flac/src/libFLAC/CMakeFiles/CheckASM_NASM/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,1 @@
+/usr/bin/c++ -g "CMakeFiles/birb-config.dir/birb-config.cpp.o" -o birb-config 
