@@ -5,6 +5,19 @@ using namespace Birb;
 
 static float player_speed = 500.0f;
 
+void SetCaveScenePosition(Cavegen& cavegen, const int& tile_size, const Entity& player)
+{
+	Vector2 distance_from_start = (Vector2Int( player.rect.x, player.rect.y ) - cavegen.startPosition()).ToFloat();
+	distance_from_start = distance_from_start - Vector2((tile_size - player.rect.w) / 2.0, (tile_size - player.rect.h) / 2.0);
+	cavegen.scene.SetPosition(distance_from_start);
+}
+
+void CenterThePlayer(Entity& player, const int& tile_size, const Window& window)
+{
+	player.rect.x = window.dimensions.x / 2.0 - tile_size / 2.0;
+	player.rect.y = window.dimensions.y / 2.0 - tile_size / 2.0;
+}
+
 int main(int argc, char** argv)
 {
 	Debug::Log("Creating the window");
@@ -17,29 +30,32 @@ int main(int argc, char** argv)
 	timeStep.Init(&window);
 
 	Vector2Int cave_dimensions = {24, 24};
-	int tile_size = 64;
+	int tile_size = 128;
+	int tile_count = 256;
 
-	Cavegen cavegen(cave_dimensions, 512, tile_size);
+	Texture cave_wall_sprite("./res/brick.png");
+	Cavegen cavegen(cave_dimensions, tile_count, tile_size, cave_wall_sprite);
 
 	/* Create the player entity */
 	Entity player("Player", Rect((window.dimensions.x / 2.0) - tile_size / 2.0,
 				(window.dimensions.y / 2.0) - tile_size / 2.0,
-				tile_size / 2.0, tile_size / 2.0));
+				tile_size / 4.0, tile_size / 4.0));
 
 	player.rect.color = Colors::Green;
 
+
 	/* Create the goal entity */
-	Entity goal("Goal", Rect(cavegen.endPosition().x - tile_size / 2.0,
-				cavegen.endPosition().y - tile_size / 2.0,
+	Scene goal_scene;
+	Entity goal("Goal", Rect(cavegen.endPosition().x + tile_size / 4.0,
+				cavegen.endPosition().y + tile_size / 4.0,
 				tile_size / 2.0, tile_size / 2.0));
-
 	goal.rect.color = Colors::Red;
-
+	goal_scene.AddObject(&goal);
 
 	/* Calculate the distance from the player to the level starting position */
-	Vector2 distance_from_start = (Vector2Int( player.rect.x, player.rect.y ) - cavegen.startPosition() * tile_size).ToFloat();
-	distance_from_start = distance_from_start - Vector2((tile_size - player.rect.w) / 2.0, (tile_size - player.rect.h) / 2.0);
-	cavegen.scene.SetPosition(distance_from_start);
+	SetCaveScenePosition(cavegen, tile_size, player);
+
+	goal_scene.SetPosition(cavegen.scene.Position());
 
 	Debug::Log("Starting the game loop");
 
@@ -73,6 +89,7 @@ int main(int argc, char** argv)
 					direction = direction + Vector2::Down();
 
 				keydown = direction != Vector2(0, 0);
+
 			}
 
 			timeStep.Step();
@@ -101,6 +118,20 @@ int main(int argc, char** argv)
 
 			if (!collision_found)
 				cavegen.scene.Translate(movement_delta);
+
+			/* Update goal position */
+			goal_scene.SetPosition(cavegen.scene.Position());
+
+			/* Check if the player collided with the goal */
+			if (Physics::EntityCollision(goal, player))
+			{
+				cavegen.Reset();
+				SetCaveScenePosition(cavegen, tile_size, player);
+				goal_scene.SetPosition(cavegen.scene.Position());
+				goal.rect = cavegen.endPosition();
+				goal.rect.x += tile_size / 4.0;
+				goal.rect.y += tile_size / 4.0;
+			}
 		}
 
 		window.Clear();

@@ -4,7 +4,7 @@
 class Cavegen
 {
 public:
-	Cavegen(Birb::Vector2Int dimensions, int cave_size, int tile_size);
+	Cavegen(Birb::Vector2Int dimensions, int cave_size, int tile_size, Birb::Texture& wall_texture);
 	~Cavegen();
 	Birb::Vector2Int GetDimensions() const;
 	bool* isWall;
@@ -15,13 +15,18 @@ public:
 	int wallCount() const;
 	Birb::Entity* wallEntities() const;
 
+	void Reset(); ///< Reset the cave and create a new one
+
 private:
+	Birb::Texture& texture;
 	Birb::Vector2Int start_pos;
 	Birb::Vector2Int end_pos;
 
 	Birb::Random rand;
 	int tile_size;
+	int cave_size;
 
+	void CreateNewCave();
 	void DrunkWalk(Birb::Vector2Int start_pos, int tile_count);
 	void CreateScene();
 
