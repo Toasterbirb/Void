@@ -15,6 +15,7 @@ endif(CCACHE_FOUND)
 # Headers
 include_directories(include/)
 include_directories(birb2d/include/)
+#include_directories(birb2d/vendor/microprofile)
 
 add_subdirectory(birb2d)
 include_directories(birb2d/vendor/SDL/include)

@@ -1,37 +1,48 @@
 #pragma once
 #include "Birb2D.hpp"
 
-class Cavegen
+namespace Birb
 {
-public:
-	Cavegen(Birb::Vector2Int dimensions, int cave_size, int tile_size, Birb::Texture& wall_texture);
-	~Cavegen();
-	Birb::Vector2Int GetDimensions() const;
-	bool* isWall;
-	Birb::Scene scene;
+	class Cavegen
+	{
+	public:
+		Cavegen(Vector2Int dimensions, int cave_size, int tile_size, Texture& wall_texture);
+		~Cavegen();
+		Vector2Int GetDimensions() const;
+		bool* isWall;
+		Scene scene;
 
-	Birb::Vector2Int startPosition() const;
-	Birb::Vector2Int endPosition() const;
-	int wallCount() const;
-	Birb::Entity* wallEntities() const;
+		Vector2Int startPosition() const;
+		Vector2Int endPosition() const;
+		int wallCount() const;
+		Entity* wallEntities() const;
+		std::vector<Entity> enemyEntities() const;
 
-	void Reset(); ///< Reset the cave and create a new one
+		void Reset(); ///< Reset the cave and create a new one
 
-private:
-	Birb::Texture& texture;
-	Birb::Vector2Int start_pos;
-	Birb::Vector2Int end_pos;
+	private:
+		Texture& texture;
+		Vector2Int start_pos;
+		Vector2Int end_pos;
 
-	Birb::Random rand;
-	int tile_size;
-	int cave_size;
+		Random rand;
+		int tile_size;
+		int cave_size;
 
-	void CreateNewCave();
-	void DrunkWalk(Birb::Vector2Int start_pos, int tile_count);
-	void CreateScene();
+		void CreateNewCave();
+		void DrunkWalk(Vector2Int start_pos, int tile_count);
+		void CreateScene();
 
-	Birb::Entity* walls;
-	Birb::Vector2Int dimensions;
-	int walk_area_count;
-	int wall_count;
-};
+		Scene wall_scene;
+		Entity* walls;
+		Vector2Int dimensions;
+		int walk_area_count;
+		int wall_count;
+		Vector2Int* walkable_tiles;
+
+		/* Enemies */
+		void SpawnEnemies();
+		Scene enemy_scene;
+		std::vector<Entity> enemies;
+	};
+}

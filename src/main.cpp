@@ -4,6 +4,7 @@
 using namespace Birb;
 
 static float player_speed = 500.0f;
+static Rect new_player_pos;
 
 void SetCaveScenePosition(Cavegen& cavegen, const int& tile_size, const Entity& player)
 {
@@ -43,6 +44,13 @@ int main(int argc, char** argv)
 
 	player.rect.color = Colors::Green;
 
+	new_player_pos = {
+		0,
+		0,
+		player.rect.w,
+		player.rect.h
+	};
+
 
 	/* Create the goal entity */
 	Scene goal_scene;
@@ -76,16 +84,16 @@ int main(int argc, char** argv)
 				direction = {0, 0};
 
 				const Uint8 *state = SDL_GetKeyboardState(NULL);
-				if (state[SDL_SCANCODE_LEFT] || state[SDL_SCANCODE_H])
+				if (state[SDL_SCANCODE_LEFT] || state[SDL_SCANCODE_H] || state[SDL_SCANCODE_A])
 					direction = direction + Vector2::Right();
 
-				if (state[SDL_SCANCODE_RIGHT] || state[SDL_SCANCODE_L])
+				if (state[SDL_SCANCODE_RIGHT] || state[SDL_SCANCODE_L] || state[SDL_SCANCODE_D])
 					direction = direction + Vector2::Left();
 
-				if (state[SDL_SCANCODE_UP] || state[SDL_SCANCODE_K])
+				if (state[SDL_SCANCODE_UP] || state[SDL_SCANCODE_K] || state[SDL_SCANCODE_W])
 					direction = direction + Vector2::Up();
 
-				if (state[SDL_SCANCODE_DOWN] || state[SDL_SCANCODE_J])
+				if (state[SDL_SCANCODE_DOWN] || state[SDL_SCANCODE_J] || state[SDL_SCANCODE_S])
 					direction = direction + Vector2::Down();
 
 				keydown = direction != Vector2(0, 0);
@@ -97,13 +105,10 @@ int main(int argc, char** argv)
 
 		if (keydown)
 		{
+			//MICROPROFILE_SCOPEI("Game group", "Movement update", MP_GREEN);
 			Vector2 movement_delta = direction * timeStep.deltaTime * player_speed;
-			Rect new_player_pos = {
-				player.rect.x - movement_delta.x,
-				player.rect.y - movement_delta.y,
-				player.rect.w,
-				player.rect.h
-			};
+			new_player_pos.x = player.rect.x - movement_delta.x;
+			new_player_pos.y = player.rect.y - movement_delta.y;
 
 			/* Check for collision */
 			bool collision_found = false;
@@ -140,6 +145,34 @@ int main(int argc, char** argv)
 		cavegen.scene.Render();
 		Render::DrawEntity(goal);
 		Render::DrawEntity(player);
+
+		/* Draw lines from the player to all enemies */
+		for (size_t i = 0; i < cavegen.enemyEntities().size(); ++i)
+		{
+			/* Check if the player is even near the enemy */
+			if (Math::VectorDistance(Vector2(player.rect.x, player.rect.y), Vector2(cavegen.enemyEntities()[i].rect.x, cavegen.enemyEntities()[i].rect.y)) > window.dimensions.x)
+				continue;
+
+			Line line = Line({player.rect.x + player.rect.w / 2.0, player.rect.y + player.rect.h / 2.0}, {cavegen.enemyEntities()[i].rect.x + cavegen.enemyEntities()[i].rect.w / 2.0, cavegen.enemyEntities()[i].rect.y + cavegen.enemyEntities()[i].rect.h / 2.0});
+			bool collision_found = false;
+			for (int j = 0; j < cavegen.wallCount(); ++j)
+			{
+				std::vector<Line> lines = cavegen.wallEntities()[j].rect.toLines();
+				for (short k = 0; k < 4; ++k)
+				{
+					if (Physics::LineIntersection(line, lines[k]))
+					{
+						collision_found = true;
+						break;
+					}
+				}
+
+				if (collision_found)
+					break;
+			}
+			if (collision_found == false)
+				Render::DrawLine(line);
+		}
 
 		/* End of rendering */
 		window.Display();
