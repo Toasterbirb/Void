@@ -22,7 +22,8 @@ include_directories(birb2d/vendor/SDL/include)
 
 add_executable(${PROGRAM_NAME}
 	src/main.cpp
-	src/cavegen.cpp)
+	src/cavegen.cpp
+	src/enemy.cpp)
 target_link_libraries(${PROGRAM_NAME} birb2d)
 target_precompile_headers(${PROGRAM_NAME} PRIVATE birb2d/include/Birb2D.hpp)
 

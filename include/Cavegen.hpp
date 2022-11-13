@@ -1,5 +1,6 @@
 #pragma once
 #include "Birb2D.hpp"
+#include "Enemy.hpp"
 
 namespace Birb
 {
@@ -17,7 +18,8 @@ namespace Birb
 		Vector2Int endPosition() const;
 		int wallCount() const;
 		Entity* wallEntities() const;
-		std::vector<Entity> enemyEntities() const;
+		std::vector<Enemy> enemies;
+		void EnemyTick(const TimeStep& timeStep);
 
 		void Reset(); ///< Reset the cave and create a new one
 
@@ -44,6 +46,5 @@ namespace Birb
 		/* Enemies */
 		void SpawnEnemies();
 		Scene enemy_scene;
-		std::vector<Entity> enemies;
 	};
 }

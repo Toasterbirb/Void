@@ -44,11 +44,6 @@ Entity* Cavegen::wallEntities() const
 	return walls;
 }
 
-std::vector<Entity> Cavegen::enemyEntities() const
-{
-	return enemies;
-}
-
 void Cavegen::Reset()
 {
 	/* Free the old walls */
@@ -250,6 +245,12 @@ void Cavegen::CreateScene()
 	}
 }
 
+void Cavegen::EnemyTick(const TimeStep& timeStep)
+{
+	for (size_t i = 0; i < enemies.size(); ++i)
+		enemies[i].MovementTick(timeStep);
+}
+
 void Cavegen::SpawnEnemies()
 {
 	//int enemy_count = rand.RandomInt(1, 5);
@@ -278,11 +279,12 @@ void Cavegen::SpawnEnemies()
 		picked_tiles.push_back(tile_index);
 
 		/* Create an entity for the enemy and add it into the enemy vector */
-		Entity enemy("Enemy", Rect(walkable_tiles[tile_index].y * tile_size,
-					walkable_tiles[tile_index].x * tile_size,
-					tile_size, tile_size));
+		Enemy enemy(Rect(walkable_tiles[tile_index].y * tile_size + tile_size / 4.0,
+					walkable_tiles[tile_index].x * tile_size + tile_size / 4.0,
+					tile_size / 2.0, tile_size / 2.0),
+					tile_size, rand, 0.01);
 		enemies.push_back(enemy);
-		enemy_scene.AddObjectFast(&enemies[enemies.size() - 1]);
+		enemy_scene.AddObjectFast(&enemies[enemies.size() - 1].entity);
 	}
 
 	Debug::Log("Enemy count: " + std::to_string(enemy_count));

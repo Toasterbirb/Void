@@ -5,7 +5,6 @@ using namespace Birb;
 
 static float player_speed = 500.0f;
 static Rect new_player_pos;
-static Circle collision_point;
 
 void SetCaveScenePosition(Cavegen& cavegen, const int& tile_size, const Entity& player)
 {
@@ -108,7 +107,7 @@ int main(int argc, char** argv)
 		}
 
 		/* Find the tile that the player is on right now */
-		Vector2Int current_player_tile(std::round(std::abs(cavegen.wallEntities()[0].rect.x - (player.rect.x - player.rect.w)) / 128), std::round(std::abs(cavegen.wallEntities()[0].rect.y - (player.rect.y - player.rect.h)) / 128));
+		Vector2Int current_player_tile(std::round(std::abs(cavegen.wallEntities()[0].rect.x - (player.rect.x - player.rect.w)) / tile_size), std::round(std::abs(cavegen.wallEntities()[0].rect.y - (player.rect.y - player.rect.h)) / tile_size));
 
 		if (keydown)
 		{
@@ -150,17 +149,16 @@ int main(int argc, char** argv)
 		}
 
 		/* Draw lines from the player to all enemies */
-		std::vector<Rect> boundingBoxes;
 		std::vector<Vector2> line_points_to_render;
-		line_points_to_render.reserve(cavegen.enemyEntities().size() * 2);
+		line_points_to_render.reserve(cavegen.enemies.size() * 2);
 
 		Vector2Int start_tile;
 		Vector2Int end_tile;
 
-		for (size_t i = 0; i < cavegen.enemyEntities().size(); ++i)
+		for (size_t i = 0; i < cavegen.enemies.size(); ++i)
 		{
 			/* Check which one is more up + left, the player or the enemy */
-			Vector2Int enemy_tile(std::abs(cavegen.enemyEntities()[i].rect.x - cavegen.wallEntities()[0].rect.x) / 128, std::abs(cavegen.enemyEntities()[i].rect.y - cavegen.wallEntities()[0].rect.y) / 128);
+			Vector2Int enemy_tile(std::abs(cavegen.enemies[i].entity.rect.x - cavegen.wallEntities()[0].rect.x) / tile_size, std::abs(cavegen.enemies[i].entity.rect.y - cavegen.wallEntities()[0].rect.y) / tile_size);
 			if (current_player_tile.x < enemy_tile.x)
 			{
 				start_tile.x 	= current_player_tile.x;
@@ -201,13 +199,12 @@ int main(int argc, char** argv)
 			if (end_tile.y > cave_dimensions.y - 1)
 				end_tile.y = cave_dimensions.y - 1;
 
-			std::cout << "Start: " << start_tile << ", " << end_tile << std::endl;
 
 			/* Check if the player is even near the enemy */
 			//if (Math::VectorDistance(Vector2(player.rect.x, player.rect.y), Vector2(cavegen.enemyEntities()[i].rect.x, cavegen.enemyEntities()[i].rect.y)) > window.dimensions.x / 2.0)
 			//	continue;
 
-			Line line = Line({player.rect.x + player.rect.w / 2.0, player.rect.y + player.rect.h / 2.0}, {cavegen.enemyEntities()[i].rect.x + cavegen.enemyEntities()[i].rect.w / 2.0, cavegen.enemyEntities()[i].rect.y + cavegen.enemyEntities()[i].rect.h / 2.0});
+			Line line = Line({player.rect.x + player.rect.w / 2.0f, player.rect.y + player.rect.h / 2.0f}, {cavegen.enemies[i].entity.rect.x + cavegen.enemies[i].entity.rect.w / 2.0f, cavegen.enemies[i].entity.rect.y + cavegen.enemies[i].entity.rect.h / 2.0f});
 			bool collision_found = false;
 			int check_counter = 0;
 			for (int k = start_tile.x; k < end_tile.x; ++k)
@@ -227,7 +224,6 @@ int main(int argc, char** argv)
 						if (Physics::LineIntersection(line, lines[k]))
 						{
 							collision_found = true;
-							collision_point = Circle(8, Vector2(cavegen.wallPointers[wall_index]->rect.x + tile_size * 0.5, cavegen.wallPointers[wall_index]->rect.y + tile_size * 0.5).ToInt(), Colors::Green);
 							//std::cout << "Enemy [" << i << "] Collision at wall [" << j << " / " << cavegen.wallCount() << "]: " << cavegen.wallEntities()[j].rect << std::endl;
 							break;
 						}
@@ -240,15 +236,14 @@ int main(int argc, char** argv)
 				if (collision_found)
 					break;
 			}
-			std::cout << "Counter: " << check_counter << std::endl;
 			if (collision_found == false || check_counter == 0)
 			{
 				line_points_to_render.push_back(line.pointA);
 				line_points_to_render.push_back(line.pointB);
-				boundingBoxes.push_back(line.boundingBox());
 			}
 		}
 
+		cavegen.EnemyTick(timeStep);
 
 		window.Clear();
 		/* Handle rendering */
@@ -258,16 +253,6 @@ int main(int argc, char** argv)
 		Render::DrawEntity(player);
 
 		Render::DrawLines(Colors::White, &line_points_to_render[0], line_points_to_render.size());
-
-		for (size_t i = 0; i < boundingBoxes.size(); ++i)
-		{
-			Render::DrawRect(Colors::LightGray, boundingBoxes[i], 2);
-		}
-
-		if (line_points_to_render.size() == 0)
-		{
-			Render::DrawCircle(collision_point);
-		}
 
 		/* End of rendering */
 		window.Display();
