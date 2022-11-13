@@ -10,6 +10,7 @@ namespace Birb
 		~Cavegen();
 		Vector2Int GetDimensions() const;
 		bool* isWall;
+		Entity** wallPointers;
 		Scene scene;
 
 		Vector2Int startPosition() const;

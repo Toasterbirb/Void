@@ -7,12 +7,14 @@ Cavegen::Cavegen(Birb::Vector2Int dimensions, int cave_size, int tile_size, Text
 :texture(wall_texture), tile_size(tile_size), cave_size(cave_size), dimensions(dimensions), walk_area_count(0)
 {
 	isWall = new bool[dimensions.x * dimensions.y];
+	wallPointers = new Entity*[dimensions.x * dimensions.y];
 	CreateNewCave();
 }
 
 Cavegen::~Cavegen()
 {
 	delete[] isWall;
+	delete[] wallPointers;
 	delete[] walls;
 	delete[] walkable_tiles;
 }
@@ -73,6 +75,7 @@ void Cavegen::CreateNewCave()
 	scene.AddObject(&wall_scene);
 	scene.AddObject(&enemy_scene);
 	std::fill_n(isWall, dimensions.x * dimensions.y, true);
+	std::fill_n(wallPointers, dimensions.x * dimensions.y, nullptr);
 	//for (int i = 0; i < dimensions.x * dimensions.y; ++i)
 	//	isWall[i] = true;
 
@@ -248,7 +251,8 @@ void Cavegen::CreateScene()
 
 void Cavegen::SpawnEnemies()
 {
-	int enemy_count = rand.RandomInt(10, 50);
+	//int enemy_count = rand.RandomInt(1, 5);
+	int enemy_count = 100;
 	enemies.reserve(enemy_count);
 	std::vector<int> picked_tiles(enemy_count);
 

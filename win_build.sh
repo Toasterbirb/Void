@@ -10,10 +10,10 @@ APP_NAME=void
 mkdir -pv "$BUILD_DIR"
 cd "$BUILD_DIR"
 
-cmake .. -DRELEASE=on -DWINDOWS=on -DTESTS=off -DUTILS=off -DSTATIC_SDL=on -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ -DCMAKE_C_FLAGS="-fstack-protector -static" -DCMAKE_CXX_FLAGS="-fstack-protector -static -static-libstdc++" -DMINGW=TRUE
+cmake .. -DBUNDLED_ASSETS=on -DRELEASE=on -DWINDOWS=on -DTESTS=off -DUTILS=off -DSTATIC_SDL=on -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ -DCMAKE_C_FLAGS="-fstack-protector -static" -DCMAKE_CXX_FLAGS="-fstack-protector -static -static-libstdc++" -DMINGW=TRUE
 
 # Compile
-make -j$(nproc)
+make -j$(nproc) || exit 1
 
 # Move the binary and resources
 mkdir ${APP_NAME}-win
