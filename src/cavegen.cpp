@@ -242,6 +242,7 @@ void Cavegen::CreateScene()
 				walls[wall_counter].rect.x = j * tile_size;
 				walls[wall_counter].rect.y = i * tile_size;
 				wall_scene.AddObjectFast(&walls[wall_counter]);
+				wallPointers[flat_index] = &walls[wall_counter];
 
 				++wall_counter;
 			}
@@ -252,7 +253,7 @@ void Cavegen::CreateScene()
 void Cavegen::SpawnEnemies()
 {
 	//int enemy_count = rand.RandomInt(1, 5);
-	int enemy_count = 100;
+	int enemy_count = 0;
 	enemies.reserve(enemy_count);
 	std::vector<int> picked_tiles(enemy_count);
 

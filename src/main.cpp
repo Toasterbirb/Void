@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	AssetManager::InitializeBundledAssets();
 
 	Debug::Log("Creating the window");
-	Window window("Void", Birb::Vector2Int(1280, 720), 300, false);
+	Window window("Void", Birb::Vector2Int(1280, 720), 240, false);
 
 	Splash splash(window);
 	splash.Run();
@@ -107,6 +107,9 @@ int main(int argc, char** argv)
 			timeStep.Step();
 		}
 
+		/* Find the tile that the player is on right now */
+		Vector2Int current_player_tile(std::round(std::abs(cavegen.wallEntities()[0].rect.x - (player.rect.x - player.rect.w)) / 128), std::round(std::abs(cavegen.wallEntities()[0].rect.y - (player.rect.y - player.rect.h)) / 128));
+
 		if (keydown)
 		{
 			//MICROPROFILE_SCOPEI("Game group", "Movement update", MP_GREEN);
@@ -116,12 +119,15 @@ int main(int argc, char** argv)
 
 			/* Check for collision */
 			bool collision_found = false;
-			for (int i = 0; i < cavegen.wallCount(); ++i)
+			for (int i = current_player_tile.x - 2; i < current_player_tile.x + 2 && !collision_found; ++i)
 			{
-				if (Physics::RectCollision(new_player_pos, cavegen.wallEntities()[i].rect))
+				for (int j = current_player_tile.y - 2; j < current_player_tile.y + 2 && !collision_found; ++j)
 				{
-					collision_found = true;
-					break;
+					int wall_index = utils::FlatIndex(Vector2Int(j, i), cave_dimensions);
+					if (!cavegen.isWall[wall_index])
+						continue;
+
+					collision_found = Physics::RectCollision(new_player_pos, cavegen.wallPointers[wall_index]->rect);
 				}
 			}
 
@@ -148,8 +154,6 @@ int main(int argc, char** argv)
 		std::vector<Vector2> line_points_to_render;
 		line_points_to_render.reserve(cavegen.enemyEntities().size() * 2);
 
-		/* Find the tile that the player is on right now */
-		Vector2Int current_player_tile(std::round(std::abs(cavegen.wallEntities()[0].rect.x - (player.rect.x - player.rect.w)) / 128), std::round(std::abs(cavegen.wallEntities()[0].rect.y - (player.rect.y - player.rect.h)) / 128));
 		Vector2Int start_tile;
 		Vector2Int end_tile;
 
@@ -179,13 +183,25 @@ int main(int argc, char** argv)
 				end_tile.y 		= current_player_tile.y;
 			}
 
+			/* Add some padding */
+			start_tile.x -= 1;
+			start_tile.y -= 1;
+			end_tile.x += 1;
+			end_tile.y += 1;
+
+			if (start_tile.x < 0)
+				start_tile.x = 0;
+
+			if (start_tile.y < 0)
+				start_tile.y = 0;
+
 			if (end_tile.x > cave_dimensions.x - 1)
 				end_tile.x = cave_dimensions.x - 1;
 
 			if (end_tile.y > cave_dimensions.y - 1)
 				end_tile.y = cave_dimensions.y - 1;
 
-			//std::cout << "Start: " << start_tile << ", " << end_tile << std::endl;
+			std::cout << "Start: " << start_tile << ", " << end_tile << std::endl;
 
 			/* Check if the player is even near the enemy */
 			//if (Math::VectorDistance(Vector2(player.rect.x, player.rect.y), Vector2(cavegen.enemyEntities()[i].rect.x, cavegen.enemyEntities()[i].rect.y)) > window.dimensions.x / 2.0)
@@ -193,24 +209,25 @@ int main(int argc, char** argv)
 
 			Line line = Line({player.rect.x + player.rect.w / 2.0, player.rect.y + player.rect.h / 2.0}, {cavegen.enemyEntities()[i].rect.x + cavegen.enemyEntities()[i].rect.w / 2.0, cavegen.enemyEntities()[i].rect.y + cavegen.enemyEntities()[i].rect.h / 2.0});
 			bool collision_found = false;
-			for (int j = start_tile.x; j < end_tile.x - 1; ++j)
+			int check_counter = 0;
+			for (int k = start_tile.x; k < end_tile.x; ++k)
 			{
-				for (int k = start_tile.y; k < end_tile.y - 1; ++k)
+				for (int j = start_tile.y; j < end_tile.y; ++j)
 				{
 					int wall_index = utils::FlatIndex(Vector2Int(j, k), cave_dimensions);
 
 					if (!cavegen.isWall[wall_index])
 						continue;
 
-					std::cout << "Accessing wall: " << j << ", " << k << std::endl;
+					++check_counter;
 
-					std::vector<Line> lines = cavegen.wallEntities()[wall_index].rect.toLines();
+					std::vector<Line> lines = cavegen.wallPointers[wall_index]->rect.toLines();
 					for (short k = 0; k < 4; ++k)
 					{
 						if (Physics::LineIntersection(line, lines[k]))
 						{
 							collision_found = true;
-							collision_point = Circle(8, Vector2(cavegen.wallEntities()[wall_index].rect.x + tile_size * 0.5, cavegen.wallEntities()[wall_index].rect.y + tile_size * 0.5).ToInt(), Colors::Green);
+							collision_point = Circle(8, Vector2(cavegen.wallPointers[wall_index]->rect.x + tile_size * 0.5, cavegen.wallPointers[wall_index]->rect.y + tile_size * 0.5).ToInt(), Colors::Green);
 							//std::cout << "Enemy [" << i << "] Collision at wall [" << j << " / " << cavegen.wallCount() << "]: " << cavegen.wallEntities()[j].rect << std::endl;
 							break;
 						}
@@ -223,11 +240,12 @@ int main(int argc, char** argv)
 				if (collision_found)
 					break;
 			}
-			if (collision_found == false)
+			std::cout << "Counter: " << check_counter << std::endl;
+			if (collision_found == false || check_counter == 0)
 			{
 				line_points_to_render.push_back(line.pointA);
 				line_points_to_render.push_back(line.pointB);
-				//boundingBoxes.push_back(line.boundingBox());
+				boundingBoxes.push_back(line.boundingBox());
 			}
 		}
 
